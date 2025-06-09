@@ -1,0 +1,11 @@
+#Game Settings
+WIDTH = 1280
+HEIGHT = 720
+FPS = 60
+
+
+
+#Player settings
+PLAYER_START_X = 600
+PLAYER_START_Y = 300
+PLAYER_SPEED = 8

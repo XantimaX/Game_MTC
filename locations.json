@@ -1,0 +1,48 @@
+{
+    "player" : {
+        "idle" : [  "Assets\\player\\handgun\\idle\\survivor-idle_handgun_0.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_1.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_10.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_11.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_12.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_13.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_14.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_15.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_16.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_17.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_18.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_19.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_2.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_3.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_4.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_5.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_6.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_7.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_8.png",
+                    "Assets\\player\\handgun\\idle\\survivor-idle_handgun_9.png"
+                ] ,
+        "move" : [
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_0.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_1.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_10.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_11.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_12.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_13.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_14.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_15.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_16.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_17.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_18.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_19.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_2.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_3.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_4.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_5.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_6.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_7.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_8.png",
+                    "Assets\\player\\handgun\\move\\survivor-move_handgun_9.png"
+        ]
+        
+    }
+}
