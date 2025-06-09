@@ -22,17 +22,26 @@ class Player(pygame.sprite.Sprite) :
         self.last_move_update = pygame.time.get_ticks()
 
 
-
-        self.player_sprite = self.idle_frames[0]
-        self.base_player_sprite = self.player_sprite
-        self.hitbox_rect = self.base_player_sprite.get_rect(center = self.pos)
-        self.rect = self.hitbox_rect.copy()
         self.pos = pygame.math.Vector2(settings.PLAYER_START_X, settings.PLAYER_START_Y)
+
+        self.image = self.idle_frames[0]
+        self.base_sprite = self.image
+
+        self.hitbox_rect = self.base_sprite.get_rect(center = self.pos)
+        self.rect = self.hitbox_rect.copy()
         self.speed = settings.PLAYER_SPEED
 
         
         
+    def move(self):
+        self.pos  += pygame.math.Vector2(self.velocity_x, self.velocity_y)
+        self.hitbox_rect.center = self.pos
+        self.rect.center = self.hitbox_rect.center
+        # self.check_collision("horizontal")
 
+        # self.check_collision("vertical")
+
+        
     def user_input(self):
         self.velocity_x = 0 
         self.velocity_y = 0
@@ -55,20 +64,21 @@ class Player(pygame.sprite.Sprite) :
     def player_turning(self): 
         self.mouse_coords = pygame.mouse.get_pos() 
 
-        self.x_change_mouse_player = (self.mouse_coords[0] - (settings.WIDTH // 2))
-        self.y_change_mouse_player = (self.mouse_coords[1] - (settings.HEIGHT // 2))
-        self.angle = int(math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player)))
-        self.angle = (self.angle) % 360 # if this stop working add 360 in the brackets
+        #getting the angle -> theta = tan-1(change in y / change in x)
+        self.x_change_mouse_player = (self.mouse_coords[0] - (self.hitbox_rect.center[0]))
+        self.y_change_mouse_player = (self.mouse_coords[1] - (self.hitbox_rect.center[1]))
+        self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
 
-        self.image = pygame.transform.rotate(self.player_sprite, -self.angle)
-        self.rect = self.image.get_rect(center = self.rect.center)
-
+        self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
+        self.rect = self.image.get_rect(center = self.hitbox_rect.center)
+        
     def update(self):
         
         self.user_input()
+        self.move()
         self.pos.x += self.velocity_x
         self.pos.y += self.velocity_y
-
+        self.rect.center = (int(self.pos.x), int(self.pos.y))
         
         if self.velocity_x == 0 and self.velocity_y == 0:
             # Idle: animate idle frames
@@ -76,12 +86,12 @@ class Player(pygame.sprite.Sprite) :
             if now - self.last_idle_update > self.idle_animation_time:
                 self.idle_frame_index = (self.idle_frame_index + 1) % len(self.idle_frames)
                 self.last_idle_update = now
-            self.player_sprite = self.idle_frames[self.idle_frame_index]
+            self.base_sprite = self.idle_frames[self.idle_frame_index]
         else :
             now = pygame.time.get_ticks()
             if now - self.last_move_update > self.move_animation_time:
                 self.move_frame_index = (self.move_frame_index + 1) % len(self.move_frames)
                 self.last_move_update = now
-            self.player_sprite = self.move_frames[self.move_frame_index]
+            self.base_sprite = self.move_frames[self.move_frame_index]
 
         self.player_turning()
