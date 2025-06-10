@@ -33,9 +33,34 @@ class Player(pygame.sprite.Sprite) :
 
         
         
-    def move(self):
-        self.pos  += pygame.math.Vector2(self.velocity_x, self.velocity_y)
-        self.hitbox_rect.center = self.pos
+    def move(self, wall_rect):
+        #Move in X first 
+        self.pos.x += self.velocity_x
+        self.hitbox_rect.centerx = self.pos.x
+
+        
+
+        for wall in wall_rect:
+            if self.hitbox_rect.colliderect(wall):
+                if self.velocity_x > 0:  # moving right
+                    self.hitbox_rect.right = wall.left
+                elif self.velocity_x < 0:  # moving left
+                    self.hitbox_rect.left = wall.right
+                self.pos.x = self.hitbox_rect.centerx
+
+        #Move in Y
+        self.pos.y += self.velocity_y
+        self.hitbox_rect.centery = self.pos.y
+        
+        for wall in wall_rect:
+            if self.hitbox_rect.colliderect(wall):
+                if self.velocity_y > 0:  # moving down
+                    self.hitbox_rect.bottom = wall.top
+                elif self.velocity_y < 0:  # moving up
+                    self.hitbox_rect.top = wall.bottom
+                self.pos.y = self.hitbox_rect.centery
+        
+
         self.rect.center = self.hitbox_rect.center
         # self.check_collision("horizontal")
 
@@ -63,6 +88,7 @@ class Player(pygame.sprite.Sprite) :
     
     def player_turning(self): 
         self.mouse_coords = pygame.mouse.get_pos() 
+        
 
         #getting the angle -> theta = tan-1(change in y / change in x)
         self.x_change_mouse_player = (self.mouse_coords[0] - (self.hitbox_rect.center[0]))
@@ -72,12 +98,12 @@ class Player(pygame.sprite.Sprite) :
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
         
-    def update(self):
+    def update(self, wall_rect):
         
         self.user_input()
-        self.move()
-        self.pos.x += self.velocity_x
-        self.pos.y += self.velocity_y
+        self.move(wall_rect = wall_rect)
+        
+        
         self.rect.center = (int(self.pos.x), int(self.pos.y))
         
         if self.velocity_x == 0 and self.velocity_y == 0:
