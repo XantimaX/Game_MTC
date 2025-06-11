@@ -42,7 +42,8 @@ for layer in tmx_data.layers:
 for obj in tmx_data.objects:
     if obj.name == "wall":
         wall_rect.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
-        Tile(pos = (obj.x, obj.y), surf = obj.image, groups = sprite_group)
+        scaled_image = pygame.transform.scale(obj.image, (int(obj.width), int(obj.height)))
+        Tile(pos = (obj.x, obj.y), surf = scaled_image, groups = sprite_group)
         
 
 
