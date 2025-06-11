@@ -86,23 +86,21 @@ class Player(pygame.sprite.Sprite) :
             self.velocity_x /= math.sqrt(2)
             self.velocity_y /= math.sqrt(2)
     
-    def player_turning(self, camera_offset, zoom): 
+    def player_turning(self): 
         mouse_x, mouse_y = pygame.mouse.get_pos() 
+        screen_center = pygame.display.get_surface().get_rect().center
+
         
 
-        #adjust the mouse position for scaled image
-        new_mouse_x = mouse_x/zoom +camera_offset.x
-        new_mouse_y = mouse_y/zoom +camera_offset.y
-
         #getting the angle -> theta = tan-1(change in y / change in x)
-        self.x_change_mouse_player = (new_mouse_x - (self.hitbox_rect.center[0]))
-        self.y_change_mouse_player = (new_mouse_y - (self.hitbox_rect.center[1]))
+        self.x_change_mouse_player = (mouse_x - (screen_center[0]))
+        self.y_change_mouse_player = (mouse_y - (screen_center[1]))
         self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
 
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
         
-    def update(self, wall_rect, camera_offset, zoom):
+    def update(self, wall_rect):
         
         self.user_input()
         self.move(wall_rect = wall_rect)
@@ -124,4 +122,5 @@ class Player(pygame.sprite.Sprite) :
                 self.last_move_update = now
             self.base_sprite = self.move_frames[self.move_frame_index]
 
-        self.player_turning(camera_offset=camera_offset, zoom = zoom)
+        
+        self.player_turning()
