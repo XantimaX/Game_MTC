@@ -6,7 +6,7 @@ from pytmx.util_pygame import load_pygame
 from tiles import Tile
 from random import randint
 from camera import Camera
-
+from bullet import Bullet
 pygame.init()
 
 #window initialization
@@ -22,7 +22,11 @@ map_width = tmx_data.width * tmx_data.tilewidth
 map_height = tmx_data.height * tmx_data.tileheight
 map_surface = pygame.Surface((map_width, map_height))
 
+
 sprite_group =  pygame.sprite.Group()
+
+bullet_group = pygame.sprite.Group()
+
 
 #constants
 ZOOM = 0.5
@@ -32,6 +36,7 @@ ZOOM = 0.5
 moving_sprites =pygame.sprite.Group()
 player = entities.Player()
 moving_sprites.add(player)
+
 
 #creating camera
 camera_group = Camera(player = player,zoom = ZOOM)
@@ -65,7 +70,9 @@ while True:
             pygame.quit()
             exit()
 
-    player.update(wall_rect=wall_rect)
+    player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
+    bullet_group.update()
+
     screen.fill((0,0,0))
     camera_group.draw(screen)
 

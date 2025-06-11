@@ -2,7 +2,7 @@ import pygame
 import json
 import settings
 import math
-
+from bullet import Bullet
 
 entities_stuffs = json.load(open(r".\locations.json", "r"))
 
@@ -31,6 +31,9 @@ class Player(pygame.sprite.Sprite) :
         self.rect = self.hitbox_rect.copy()
         self.speed = settings.PLAYER_SPEED
 
+        #shooting
+        self.shoot = False
+        self.shoot_cooldown = 0
         
         
     def move(self, wall_rect):
@@ -67,7 +70,7 @@ class Player(pygame.sprite.Sprite) :
         # self.check_collision("vertical")
 
         
-    def user_input(self):
+    def user_input(self, bullet_group, camera_group):
         self.velocity_x = 0 
         self.velocity_y = 0
 
@@ -85,6 +88,13 @@ class Player(pygame.sprite.Sprite) :
         if self.velocity_x != 0 and self.velocity_y != 0: # moving diagonally
             self.velocity_x /= math.sqrt(2)
             self.velocity_y /= math.sqrt(2)
+        
+        if pygame.mouse.get_pressed() == (1,0,0) or keys[pygame.K_SPACE] :
+            self.shoot = True
+            self.is_shooting(bullet_group = bullet_group, camera_group = camera_group)
+        else :
+            self.shoot = False
+
     
     def player_turning(self): 
         mouse_x, mouse_y = pygame.mouse.get_pos() 
@@ -100,10 +110,19 @@ class Player(pygame.sprite.Sprite) :
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
         
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
+    
+    #method for shooting
+    def is_shooting(self, bullet_group, camera_group):
+        if self.shoot_cooldown == 0 :
+            self.shoot_cooldown = settings.SHOOT_COOLDOWN
+            self.bullet = Bullet(pos = self.pos, angle = self.angle, speed = settings.BULLET_SPEED)    
+            bullet_group.add(self.bullet)
+            camera_group.add(self.bullet)
+
+
+    def update(self, wall_rect, bullet_group, camera_group):
         
-    def update(self, wall_rect):
-        
-        self.user_input()
+        self.user_input(bullet_group=bullet_group, camera_group = camera_group)
         self.move(wall_rect = wall_rect)
         
         
@@ -122,6 +141,7 @@ class Player(pygame.sprite.Sprite) :
                 self.move_frame_index = (self.move_frame_index + 1) % len(self.move_frames)
                 self.last_move_update = now
             self.base_sprite = self.move_frames[self.move_frame_index]
-
-        
+            
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
         self.player_turning()
