@@ -11,12 +11,12 @@ class Player(pygame.sprite.Sprite) :
     def __init__(self):
         super().__init__()
 
-        self.idle_frames = [pygame.transform.rotozoom(pygame.image.load(path).convert_alpha(), 0, 0.35) for path in entities_stuffs["player"]["idle"]]
+        self.idle_frames = [pygame.transform.rotozoom(pygame.image.load(path).convert_alpha(), 0, settings.PLAYER_SIZE) for path in entities_stuffs["player"]["idle"]]
         self.idle_frame_index = 0
         self.idle_animation_time = 200  # milliseconds per frame
         self.last_idle_update = pygame.time.get_ticks()
 
-        self.move_frames = [pygame.transform.rotozoom(pygame.image.load(path).convert_alpha(), 0, 0.35) for path in entities_stuffs["player"]["move"]]
+        self.move_frames = [pygame.transform.rotozoom(pygame.image.load(path).convert_alpha(), 0, settings.PLAYER_SIZE) for path in entities_stuffs["player"]["move"]]
         self.move_frame_index = 0
         self.move_animation_time = 100
         self.last_move_update = pygame.time.get_ticks()
@@ -98,6 +98,7 @@ class Player(pygame.sprite.Sprite) :
         self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
 
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
+        
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
         
     def update(self, wall_rect):

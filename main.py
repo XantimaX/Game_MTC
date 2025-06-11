@@ -36,7 +36,6 @@ moving_sprites.add(player)
 #creating camera
 camera_group = Camera(player = player,zoom = ZOOM)
 camera_group.add(*moving_sprites)
-print("Camera Group Sprites:", camera_group.sprites())
 wall_rect = []
 
 tile_w = tmx_data.tilewidth
@@ -49,6 +48,8 @@ for layer in tmx_data.layers:
         for x,y,surf in layer.tiles():
             pos = (x*128, y*128)
             camera_group.add(Tile(pos = pos, surf = surf, groups = sprite_group))
+
+
 
 for obj in tmx_data.objects:
     if obj.name == "wall":
@@ -65,7 +66,6 @@ while True:
             exit()
 
     player.update(wall_rect=wall_rect)
-    print(f"Player pos: {player.pos}, rect center: {player.rect.center}, hitbox: {player.hitbox_rect}")
     screen.fill((0,0,0))
     camera_group.draw(screen)
 

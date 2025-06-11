@@ -25,9 +25,12 @@ class Camera(pygame.sprite.Group):
         
         for sprite in self.sprites() :
             
-            offset_pos = sprite.rect.topleft - self.camera_offset
-            temp_surface.blit(sprite.image, offset_pos)
-            
+            if sprite is not self.player :
+                offset_pos = sprite.rect.topleft - self.camera_offset
+                temp_surface.blit(sprite.image, offset_pos)
+        
+        player_offset_pos = self.player.rect.topleft - self.camera_offset
+        temp_surface.blit(self.player.image, player_offset_pos)
 
         scaled_surface = pygame.transform.smoothscale(
             temp_surface, surface.get_size()
