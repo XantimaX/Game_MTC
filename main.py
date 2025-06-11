@@ -16,13 +16,18 @@ clock = pygame.time.Clock()
 
 #load map
 tmx_data = load_pygame(r"C:\Users\oldem\Desktop\MTC_Level\map.tmx")
-map_surface = pygame.Surface((tmx_data.width * tmx_data.tilewidth,
-                              tmx_data.height * tmx_data.tileheight))
+
+
+#map setup
+map_width = tmx_data.width * tmx_data.tilewidth
+map_height = tmx_data.height * tmx_data.tileheight
+map_surface = pygame.Surface((map_width, map_height))
+
 sprite_group =  pygame.sprite.Group()
 
 
 #constants
-ZOOM = 1
+ZOOM = 0.5
 
 
 wall_rect = []
@@ -55,7 +60,6 @@ moving_sprites =pygame.sprite.Group()
 player = entities.Player()
 moving_sprites.add(player)
 
-#creating camera
 
 
 
@@ -68,18 +72,32 @@ while True:
             pygame.quit()
             exit()
 
-    player.update(wall_rect)
+
+    #creating camera
+    camera_offset = pygame.Vector2(
+        player.pos.x - (settings.WIDTH / (2 * ZOOM)),
+        player.pos.y - (settings.HEIGHT / (2 * ZOOM))
+    )
+    player.update(wall_rect=wall_rect, camera_offset=camera_offset, zoom=ZOOM)
     
 
 
     # for wall in wall_rect:
     #     pygame.draw.rect(screen, "red", wall, 2)
-    sprite_group.draw(screen)
-    moving_sprites.draw(screen)
+    sprite_group.draw(map_surface)
+    moving_sprites.draw(map_surface)
 
+    
     for wall in wall_rect:
-        pygame.draw.rect(screen, "red", wall, 2)
+        pygame.draw.rect(map_surface, "red", wall, 2)
 
+    scaled_surface = pygame.transform.smoothscale(map_surface, (int(map_width * ZOOM), int(map_height * ZOOM)))
+    scaled_camera_offset = (camera_offset * ZOOM)
+
+    screen.fill((0,0,0))
+    screen.blit(scaled_surface, (-scaled_camera_offset.x, -scaled_camera_offset.y))
+   
     pygame.display.update()  
+
 
     clock.tick(settings.FPS)
