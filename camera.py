@@ -1,5 +1,6 @@
 import pygame
 import settings
+from entities import Enemy
 
 class Camera(pygame.sprite.Group):
     def __init__(self, zoom, player):
@@ -28,7 +29,9 @@ class Camera(pygame.sprite.Group):
             if sprite is not self.player :
                 offset_pos = sprite.rect.topleft - self.camera_offset
                 temp_surface.blit(sprite.image, offset_pos)
-        
+
+            if isinstance(sprite, Enemy): 
+                 pygame.draw.rect(temp_surface, (255, 0, 0), sprite.rect.move(-self.camera_offset), 2)
         player_offset_pos = self.player.rect.topleft - self.camera_offset
         temp_surface.blit(self.player.image, player_offset_pos)
 

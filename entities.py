@@ -114,7 +114,7 @@ class Player(pygame.sprite.Sprite) :
     #method for shooting
     def is_shooting(self, bullet_group, camera_group):
         if self.shoot_cooldown == 0 :
-            self.shoot_cooldown = settings.SHOOT_COOLDOWN
+            self.shoot_cooldown = settings.PLAYER_SHOOT_COOLDOWN
             self.bullet = Bullet(pos = self.pos, angle = self.angle)    
             bullet_group.add(self.bullet)
             camera_group.add(self.bullet)
@@ -145,3 +145,107 @@ class Player(pygame.sprite.Sprite) :
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
         self.player_turning()
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.image = pygame.transform.rotozoom(
+            pygame.image.load(settings.NORMAL_ENEMY_IMAGE).convert_alpha(), 0, settings.NORMAL_ENEMY_SIZE
+        )
+
+        self.base_sprite = self.image
+
+        self.pos = pygame.math.Vector2(pos)
+        self.hitbox_rect = self.base_sprite.get_rect(center = self.pos)
+        self.rect = self.hitbox_rect.copy()
+
+        self.speed = settings.NORMAL_ENEMY_SPEED
+        self.health = settings.NORMAL_ENEMY_HEALTH
+        self.shoot_cooldown = 0
+
+    def turn_towards_player(self, player):
+        player_x, player_y = player.pos
+        enemy_x , enemy_y = self.pos
+        
+
+        #getting the angle -> theta = tan-1(change in y / change in x)
+        self.x_change_mouse_player = (enemy_x - player_x)
+        self.y_change_mouse_player = (enemy_y-player_y)
+        self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
+
+        self.image = pygame.transform.rotate(self.base_sprite, -(self.angle + 90))
+        
+        self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
+
+    def shoot_at_player(self, player, bullet_group, camera_group):
+        if self.shoot_cooldown == 0:
+            # Calculate angle to player
+            dx = player.pos.x - self.pos.x
+            dy = player.pos.y - self.pos.y
+            angle = math.degrees(math.atan2(dy, dx))
+            # Create and add bullet
+            bullet = Bullet(pos=self.pos, angle=angle)
+            bullet_group.add(bullet)
+            camera_group.add(bullet)
+            # Set cooldown (e.g., 30 frames for half a second at 60 fps)
+            self.shoot_cooldown = settings.ENEMY_SHOOT_COOLDOWN
+        
+    def update(self, player, wall_rect, bullet_group, camera_group):
+        # Simple AI: move toward player
+        direction = pygame.math.Vector2(player.pos) - self.pos
+        
+
+
+
+        if direction.length() > 1:
+            direction = direction.normalize()
+            next_pos = self.pos + direction * self.speed
+            test_rect = self.rect.copy()
+            test_rect.center = next_pos
+            
+
+
+            # Collision with walls
+            collided = False
+            for wall in wall_rect:
+                if test_rect.colliderect(wall):
+                    print("wall : " , wall , "enemy : " ,test_rect)
+                    collided = True
+                    break
+            
+            if not collided:
+                self.pos = next_pos
+            else:
+                # Try moving only in X
+                next_pos_x = pygame.math.Vector2(self.pos.x + direction.x * self.speed, self.pos.y)
+                test_rect.center = next_pos_x
+                collided_x = any(test_rect.colliderect(wall) for wall in wall_rect)
+                
+                # Try moving only in Y
+                next_pos_y = pygame.math.Vector2(self.pos.x, self.pos.y + direction.y * self.speed)
+                test_rect.center = next_pos_y
+                collided_y = any(test_rect.colliderect(wall) for wall in wall_rect)
+
+                if not collided_x:
+                    self.pos = next_pos_x
+                elif not collided_y:
+                    self.pos = next_pos_y
+            
+            self.rect.center = self.pos
+            self.turn_towards_player(player)
+
+            distance = (player.pos - self.pos).length()
+            if distance < settings.NORMAL_ENEMY_RANGE:
+                self.shoot_at_player(player, bullet_group, camera_group)
+        
+        if self.shoot_cooldown > 0 :
+            self.shoot_cooldown -= 1
+
+        # You can add more AI logic here (e.g., attack, patrol, flee)
+
+    def take_damage(self, amount):
+        self.health -= amount
+        if self.health <= 0:
+            self.kill()
+    

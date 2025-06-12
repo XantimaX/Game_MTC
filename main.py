@@ -1,7 +1,8 @@
 import pygame
 from sys import exit
 import math
-import settings,entities
+import settings
+from entities import Player, Enemy
 from pytmx.util_pygame import load_pygame
 from tiles import Tile
 from random import randint
@@ -38,7 +39,7 @@ ZOOM = 0.5
 
 #creating sprites
 moving_sprites =pygame.sprite.Group()
-player = entities.Player()
+player = Player()
 moving_sprites.add(player)
 
 
@@ -66,6 +67,15 @@ for obj in tmx_data.objects:
         scaled_image = pygame.transform.scale(obj.image, (int(obj.width), int(obj.height)))
         camera_group.add(Tile(pos = (obj.x, obj.y), surf = scaled_image, groups = sprite_group))
 
+#Will change
+enemy_group = pygame.sprite.Group()
+enemy_spawn_pos = (400, 200)  # Or load from map/object layer
+enemy = Enemy(pos=enemy_spawn_pos)
+enemy_group.add(enemy)
+
+camera_group.add(*enemy_group)
+
+                 
 
 while True:
     keys = pygame.key.get_pressed()
@@ -76,7 +86,10 @@ while True:
 
     player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
     bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
-       
+    for enemy in enemy_group :
+        enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, bullet_group = bullet_group)
+        pygame.draw.rect(screen, (255, 0, 0), enemy.rect, 2)
+    
     screen.fill((0,0,0))
     camera_group.draw(screen)
 
