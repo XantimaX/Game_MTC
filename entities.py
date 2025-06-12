@@ -115,14 +115,14 @@ class Player(pygame.sprite.Sprite) :
     def is_shooting(self, bullet_group, camera_group):
         if self.shoot_cooldown == 0 :
             self.shoot_cooldown = settings.SHOOT_COOLDOWN
-            self.bullet = Bullet(pos = self.pos, angle = self.angle, speed = settings.BULLET_SPEED)    
+            self.bullet = Bullet(pos = self.pos, angle = self.angle)    
             bullet_group.add(self.bullet)
             camera_group.add(self.bullet)
 
 
     def update(self, wall_rect, bullet_group, camera_group):
         
-        self.user_input(bullet_group=bullet_group, camera_group = camera_group)
+        self.user_input(bullet_group=bullet_group, camera_group = camera_group, )
         self.move(wall_rect = wall_rect)
         
         

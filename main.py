@@ -18,8 +18,12 @@ clock = pygame.time.Clock()
 tmx_data = load_pygame(r"C:\Users\oldem\Desktop\MTC_Level\map.tmx")
 
 #map setup
+
+global map_width, map_height
+
 map_width = tmx_data.width * tmx_data.tilewidth
 map_height = tmx_data.height * tmx_data.tileheight
+
 map_surface = pygame.Surface((map_width, map_height))
 
 
@@ -71,8 +75,8 @@ while True:
             exit()
 
     player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
-    bullet_group.update()
-
+    bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
+       
     screen.fill((0,0,0))
     camera_group.draw(screen)
 

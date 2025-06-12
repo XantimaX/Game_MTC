@@ -6,11 +6,19 @@ FPS = 60
 
 
 #Player settings
-PLAYER_START_X = 600
+PLAYER_START_X = 300
 PLAYER_START_Y = 300
 PLAYER_SPEED = 15
 PLAYER_SIZE = 0.6
 
 #bullet settings
-SHOOT_COOLDOWN = 20
-BULLET_SPEED = 10
+SHOOT_COOLDOWN = 15
+BULLET_SPEED = 20
+BULLET_IMAGE = r".\Assets\bullet\bullet.png"
+BULLET_SIZE = 0.1
+BULLET_RANGE = 600
+
+
+
+#enemy settings
+NORMAL_ENEMY_IMAGE = r".\Assets\enemies\enemy_type_normal.png"
