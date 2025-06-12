@@ -76,12 +76,18 @@ for obj in tmx_data.objects:
         wall_rect.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
         scaled_image = pygame.transform.scale(obj.image, (int(obj.width), int(obj.height)))
         camera_group.add(Tile(pos = (obj.x, obj.y), surf = scaled_image, groups = sprite_group))
-a
+
 #Will change
 enemy_group = pygame.sprite.Group()
-enemy_spawn_pos = (400, 200)  # Or load from map/object layer
-enemy = Enemy(pos=enemy_spawn_pos)
+enemy_spawn_pos1 = (400, 200)  # Or load from map/object layer
+enemy_spawn_pos2 = (400, 500)  # Or load from map/object layer
+enemy_spawn_pos3 = (400, 800)  # Or load from map/object layer
+enemy = Enemy(pos=enemy_spawn_pos1)
+enemy2 = Enemy(pos=enemy_spawn_pos2)
+enemy3 = Enemy(pos=enemy_spawn_pos3)
 enemy_group.add(enemy)
+enemy_group.add(enemy2)
+enemy_group.add(enemy3)
 
 camera_group.add(*enemy_group)
 

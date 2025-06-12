@@ -27,3 +27,7 @@ NORMAL_ENEMY_IMAGE = r".\Assets\enemies\enemy_type_normal.png"
 NORMAL_ENEMY_SIZE = 0.5               # Scale factor
 NORMAL_ENEMY_SPEED = 10                # Pixels per frame
 NORMAL_ENEMY_HEALTH = 3               # Or whatever you want
+
+
+
+PATHFIND_COOLDOWN = 60

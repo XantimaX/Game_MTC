@@ -163,11 +163,12 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = settings.NORMAL_ENEMY_SPEED
         self.health = settings.NORMAL_ENEMY_HEALTH
         self.shoot_cooldown = 0
-
+        self.pathfind_cooldown = settings.PATHFIND_COOLDOWN
         #path finding shenanigans
         self.path = []
         self.last_grid_pos = None
         self.last_player_grid_pos = None
+        
 
     def turn_towards_player(self, player):
         player_x, player_y = player.pos
@@ -211,7 +212,7 @@ class Enemy(pygame.sprite.Sprite):
         
         direction = pygame.math.Vector2(player.pos) - self.pos
 
-        if self.path and len(self.path) > 1:
+        if self.pathfind_cooldown == 0 and self.path and len(self.path) > 1:
             next_cell = self.path[1]  # path[0] is current cell
             target_x = next_cell[0] * tilewidth + tilewidth // 2
             target_y = next_cell[1] * tileheight + tileheight // 2
@@ -235,24 +236,7 @@ class Enemy(pygame.sprite.Sprite):
                     
                 if not collided:
                     self.pos = next_pos
-                else:
-                    directions = [
-                        (0, -1),  # Up
-                        (0, 1),   # Down
-                        (-1, 0),  # Left
-                        (1, 0)    # Right
-                    ]
-                    moved = False
-                    for dx, dy in directions:
-                        test_pos = pygame.math.Vector2(self.pos.x + dx * self.speed, self.pos.y + dy * self.speed)
-                        test_rect.center = test_pos
-                        if not any(test_rect.colliderect(wall) for wall in wall_rect):
-                            self.pos = test_pos
-                            moved = True
-                            break
-                    if not moved:
-                        # Optionally, recalculate the path again or wait
-                        pass
+                
 
 
 
@@ -264,7 +248,8 @@ class Enemy(pygame.sprite.Sprite):
     
         if self.shoot_cooldown > 0 :
             self.shoot_cooldown -= 1
-
+        if self.pathfind_cooldown > 0 :
+            self.pathfind_cooldown -= 1
         # You can add more AI logic here (e.g., attack, patrol, flee)
 
     def take_damage(self, amount):
