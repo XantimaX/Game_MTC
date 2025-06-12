@@ -2,6 +2,8 @@ import heapq
 import math
 
 
+
+
 def world_to_grid(pos, tilewidth, tileheight):
     grid_x = int(pos[0] // tilewidth)
     grid_y = int(pos[1] // tileheight)
@@ -9,18 +11,19 @@ def world_to_grid(pos, tilewidth, tileheight):
 
 
 def mark_wall(grid,grid_width, grid_height, tile_object, tile_width, tile_height):
+    inflate_amount = 0
     start_x = int(tile_object.x // tile_width)
     start_y = int(tile_object.y // tile_height)
     end_x = int((tile_object.x + tile_object.width) // tile_width)
     end_y = int((tile_object.y + tile_object.height) // tile_height)
 
-    for x in range(start_x, end_x):
-        for y in range(start_y, end_y):
+    for x in range(start_x-inflate_amount, end_x+inflate_amount):
+        for y in range(start_y -inflate_amount, end_y + inflate_amount):
             if 0 <= x < grid_width and 0 <= y < grid_height:
                 grid[x][y] = 1 
 
 def heuristic(start, end):
-    return abs(start[0] - end[0]) + abs(start[1] - end[0])
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
 def astar(grid, start, end):
     open_set = []

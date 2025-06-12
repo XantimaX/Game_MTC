@@ -216,48 +216,46 @@ class Enemy(pygame.sprite.Sprite):
             target_x = next_cell[0] * tilewidth + tilewidth // 2
             target_y = next_cell[1] * tileheight + tileheight // 2
             target_pos = pygame.math.Vector2(target_x, target_y)
+    
             direction = (target_pos - self.pos)
             
             if direction.length() > 0:
                 direction = direction.normalize()
-                self.pos += direction * self.speed
+                next_pos = self.pos + direction * self.speed
                 self.rect.center = (int(self.pos.x), int(self.pos.y))
-            
 
-        # if direction.length() > 1:
-        #     direction = direction.normalize()
-        #     next_pos = self.pos + direction * self.speed
-        #     test_rect = self.rect.copy()
-        #     test_rect.center = next_pos
-            
+                test_rect = self.rect.copy()
+                test_rect.center = next_pos
+                # Collision with walls
+                collided = False
+                for wall in wall_rect:
+                    if test_rect.colliderect(wall):
+                        collided = True
+                        break
+                    
+                if not collided:
+                    self.pos = next_pos
+                else:
+                    directions = [
+                        (0, -1),  # Up
+                        (0, 1),   # Down
+                        (-1, 0),  # Left
+                        (1, 0)    # Right
+                    ]
+                    moved = False
+                    for dx, dy in directions:
+                        test_pos = pygame.math.Vector2(self.pos.x + dx * self.speed, self.pos.y + dy * self.speed)
+                        test_rect.center = test_pos
+                        if not any(test_rect.colliderect(wall) for wall in wall_rect):
+                            self.pos = test_pos
+                            moved = True
+                            break
+                    if not moved:
+                        # Optionally, recalculate the path again or wait
+                        pass
 
 
-        #     # Collision with walls
-        #     collided = False
-        #     for wall in wall_rect:
-        #         if test_rect.colliderect(wall):
-        #             print("wall : " , wall , "enemy : " ,test_rect)
-        #             collided = True
-        #             break
-            
-        #     if not collided:
-        #         self.pos = next_pos
-        #     else:
-        #         # Try moving only in X
-        #         next_pos_x = pygame.math.Vector2(self.pos.x + direction.x * self.speed, self.pos.y)
-        #         test_rect.center = next_pos_x
-        #         collided_x = any(test_rect.colliderect(wall) for wall in wall_rect)
-                
-        #         # Try moving only in Y
-        #         next_pos_y = pygame.math.Vector2(self.pos.x, self.pos.y + direction.y * self.speed)
-        #         test_rect.center = next_pos_y
-        #         collided_y = any(test_rect.colliderect(wall) for wall in wall_rect)
 
-        #         if not collided_x:
-        #             self.pos = next_pos_x
-        #         elif not collided_y:
-        #             self.pos = next_pos_y
-            
         self.rect.center = self.pos
         self.turn_towards_player(player)
         distance = (player.pos - self.pos).length()
