@@ -8,6 +8,7 @@ from tiles import Tile
 from random import randint
 from camera import Camera
 from bullet import Bullet
+from pathfinding import mark_wall
 pygame.init()
 
 #window initialization
@@ -15,11 +16,20 @@ screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 pygame.display.set_caption("Top Down Shooter")
 clock = pygame.time.Clock()
 
+
+
+
+
 #load map
 tmx_data = load_pygame(r"C:\Users\oldem\Desktop\MTC_Level\map.tmx")
 
-#map setup
 
+#initializing grid of the map
+grid_width = tmx_data.width
+grid_height = tmx_data.height
+grid = [[0 for _ in range(grid_height)] for _ in range(grid_width)]
+
+#map setup
 global map_width, map_height
 
 map_width = tmx_data.width * tmx_data.tilewidth
@@ -27,11 +37,9 @@ map_height = tmx_data.height * tmx_data.tileheight
 
 map_surface = pygame.Surface((map_width, map_height))
 
-
 sprite_group =  pygame.sprite.Group()
 
 bullet_group = pygame.sprite.Group()
-
 
 #constants
 ZOOM = 0.5
@@ -56,6 +64,7 @@ scaled_tile_h = int(tile_h * ZOOM)
 for layer in tmx_data.layers:
     if hasattr(layer, "data") :
         for x,y,surf in layer.tiles():
+            
             pos = (x*128, y*128)
             camera_group.add(Tile(pos = pos, surf = surf, groups = sprite_group))
 
@@ -63,9 +72,13 @@ for layer in tmx_data.layers:
 
 for obj in tmx_data.objects:
     if obj.name == "wall":
+        mark_wall(grid=grid, grid_height=grid_height, grid_width=grid_width, tile_object=obj, tile_height= tmx_data.tileheight, tile_width = tmx_data.tilewidth)
         wall_rect.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
         scaled_image = pygame.transform.scale(obj.image, (int(obj.width), int(obj.height)))
         camera_group.add(Tile(pos = (obj.x, obj.y), surf = scaled_image, groups = sprite_group))
+
+print(grid)
+
 
 #Will change
 enemy_group = pygame.sprite.Group()
@@ -87,7 +100,7 @@ while True:
     player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
     bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
     for enemy in enemy_group :
-        enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, bullet_group = bullet_group)
+        enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, bullet_group = bullet_group, tmx_data=tmx_data, grid = grid)
         pygame.draw.rect(screen, (255, 0, 0), enemy.rect, 2)
     
     screen.fill((0,0,0))

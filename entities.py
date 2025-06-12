@@ -3,7 +3,7 @@ import json
 import settings
 import math
 from bullet import Bullet
-
+from pathfinding import world_to_grid, astar
 entities_stuffs = json.load(open(r".\locations.json", "r"))
 
 
@@ -164,15 +164,20 @@ class Enemy(pygame.sprite.Sprite):
         self.health = settings.NORMAL_ENEMY_HEALTH
         self.shoot_cooldown = 0
 
+        #path finding shenanigans
+        self.path = []
+        self.last_grid_pos = None
+        self.last_player_grid_pos = None
+
     def turn_towards_player(self, player):
         player_x, player_y = player.pos
         enemy_x , enemy_y = self.pos
         
 
         #getting the angle -> theta = tan-1(change in y / change in x)
-        self.x_change_mouse_player = (enemy_x - player_x)
-        self.y_change_mouse_player = (enemy_y-player_y)
-        self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
+        dx = (enemy_x - player_x)
+        dy = (enemy_y-player_y)
+        self.angle = math.degrees(math.atan2(dy, dx))
 
         self.image = pygame.transform.rotate(self.base_sprite, -(self.angle + 90))
         
@@ -191,54 +196,74 @@ class Enemy(pygame.sprite.Sprite):
             # Set cooldown (e.g., 30 frames for half a second at 60 fps)
             self.shoot_cooldown = settings.ENEMY_SHOOT_COOLDOWN
         
-    def update(self, player, wall_rect, bullet_group, camera_group):
+    def update(self, player, wall_rect, bullet_group, camera_group, grid, tmx_data):
         # Simple AI: move toward player
+        
+        tilewidth,tileheight = tmx_data.tilewidth, tmx_data.tileheight
+        enemy_grid = world_to_grid(pos = self.pos, tileheight= tileheight, tilewidth=tilewidth)
+        player_grid = world_to_grid(pos = player.pos, tileheight= tileheight, tilewidth=tilewidth)
+        
+        if enemy_grid != self.last_grid_pos or player_grid != self.last_player_grid_pos or not self.path:
+            self.path = astar(grid, enemy_grid, player_grid)
+            self.last_grid_pos = enemy_grid
+            self.last_player_grid_pos = player_grid
+
+        
         direction = pygame.math.Vector2(player.pos) - self.pos
-        
 
+        if self.path and len(self.path) > 1:
+            next_cell = self.path[1]  # path[0] is current cell
+            target_x = next_cell[0] * tilewidth + tilewidth // 2
+            target_y = next_cell[1] * tileheight + tileheight // 2
+            target_pos = pygame.math.Vector2(target_x, target_y)
+            direction = (target_pos - self.pos)
+            
+            if direction.length() > 0:
+                direction = direction.normalize()
+                self.pos += direction * self.speed
+                self.rect.center = (int(self.pos.x), int(self.pos.y))
+            
 
-
-        if direction.length() > 1:
-            direction = direction.normalize()
-            next_pos = self.pos + direction * self.speed
-            test_rect = self.rect.copy()
-            test_rect.center = next_pos
+        # if direction.length() > 1:
+        #     direction = direction.normalize()
+        #     next_pos = self.pos + direction * self.speed
+        #     test_rect = self.rect.copy()
+        #     test_rect.center = next_pos
             
 
 
-            # Collision with walls
-            collided = False
-            for wall in wall_rect:
-                if test_rect.colliderect(wall):
-                    print("wall : " , wall , "enemy : " ,test_rect)
-                    collided = True
-                    break
+        #     # Collision with walls
+        #     collided = False
+        #     for wall in wall_rect:
+        #         if test_rect.colliderect(wall):
+        #             print("wall : " , wall , "enemy : " ,test_rect)
+        #             collided = True
+        #             break
             
-            if not collided:
-                self.pos = next_pos
-            else:
-                # Try moving only in X
-                next_pos_x = pygame.math.Vector2(self.pos.x + direction.x * self.speed, self.pos.y)
-                test_rect.center = next_pos_x
-                collided_x = any(test_rect.colliderect(wall) for wall in wall_rect)
+        #     if not collided:
+        #         self.pos = next_pos
+        #     else:
+        #         # Try moving only in X
+        #         next_pos_x = pygame.math.Vector2(self.pos.x + direction.x * self.speed, self.pos.y)
+        #         test_rect.center = next_pos_x
+        #         collided_x = any(test_rect.colliderect(wall) for wall in wall_rect)
                 
-                # Try moving only in Y
-                next_pos_y = pygame.math.Vector2(self.pos.x, self.pos.y + direction.y * self.speed)
-                test_rect.center = next_pos_y
-                collided_y = any(test_rect.colliderect(wall) for wall in wall_rect)
+        #         # Try moving only in Y
+        #         next_pos_y = pygame.math.Vector2(self.pos.x, self.pos.y + direction.y * self.speed)
+        #         test_rect.center = next_pos_y
+        #         collided_y = any(test_rect.colliderect(wall) for wall in wall_rect)
 
-                if not collided_x:
-                    self.pos = next_pos_x
-                elif not collided_y:
-                    self.pos = next_pos_y
+        #         if not collided_x:
+        #             self.pos = next_pos_x
+        #         elif not collided_y:
+        #             self.pos = next_pos_y
             
-            self.rect.center = self.pos
-            self.turn_towards_player(player)
-
-            distance = (player.pos - self.pos).length()
-            if distance < settings.NORMAL_ENEMY_RANGE:
-                self.shoot_at_player(player, bullet_group, camera_group)
-        
+        self.rect.center = self.pos
+        self.turn_towards_player(player)
+        distance = (player.pos - self.pos).length()
+        if distance < settings.NORMAL_ENEMY_RANGE:
+            self.shoot_at_player(player, bullet_group, camera_group)
+    
         if self.shoot_cooldown > 0 :
             self.shoot_cooldown -= 1
 
