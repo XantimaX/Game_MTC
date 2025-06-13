@@ -1,6 +1,7 @@
 import pygame
 import settings
-from entities import Enemy
+from entities import NormalEnemy, BruteEnemy
+from stuffs import Grenade
 
 class Camera(pygame.sprite.Group):
     def __init__(self, zoom, player):
@@ -26,12 +27,27 @@ class Camera(pygame.sprite.Group):
         
         for sprite in self.sprites() :
             
+
             if sprite is not self.player :
                 offset_pos = sprite.rect.topleft - self.camera_offset
                 temp_surface.blit(sprite.image, offset_pos)
+            
+            if isinstance(sprite, NormalEnemy) or isinstance(sprite, BruteEnemy): 
+                    bar_width = sprite.rect.width
+                    bar_height = 5
+                    bar_x = sprite.rect.left - self.camera_offset.x
+                    bar_y = sprite.rect.top - self.camera_offset.y - bar_height - 2 
 
-            if isinstance(sprite, Enemy): 
-                 pygame.draw.rect(temp_surface, (255, 0, 0), sprite.rect.move(-self.camera_offset), 2)
+                    health_ratio = max(sprite.health/sprite.max_health, 0)
+                    #background
+                    pygame.draw.rect(temp_surface, (60, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+                    #foreground
+                    pygame.draw.rect(temp_surface, (0, 200, 0), (bar_x, bar_y, bar_width * health_ratio, bar_height))
+                    #border
+                    pygame.draw.rect(temp_surface, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 1)
+
+                    temp_surface.blit(sprite.image, offset_pos)
+            
         player_offset_pos = self.player.rect.topleft - self.camera_offset
         temp_surface.blit(self.player.image, player_offset_pos)
 

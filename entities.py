@@ -2,8 +2,9 @@ import pygame
 import json
 import settings
 import math
-from bullet import Bullet
+from stuffs import Bullet, Grenade
 from pathfinding import world_to_grid, astar
+
 entities_stuffs = json.load(open(r".\locations.json", "r"))
 
 
@@ -26,6 +27,8 @@ class Player(pygame.sprite.Sprite) :
 
         self.image = self.idle_frames[0]
         self.base_sprite = self.image
+        
+
 
         self.hitbox_rect = self.base_sprite.get_rect(center = self.pos)
         self.rect = self.hitbox_rect.copy()
@@ -35,6 +38,7 @@ class Player(pygame.sprite.Sprite) :
         self.shoot = False
         self.shoot_cooldown = 0
         
+        self.health = settings.PLAYER_HEALTH
         
     def move(self, wall_rect):
         #Move in X first 
@@ -69,6 +73,20 @@ class Player(pygame.sprite.Sprite) :
 
         # self.check_collision("vertical")
 
+    def draw_health_bar(self, surface, x, y, width, height):
+        ratio = max(self.health / settings.PLAYER_HEALTH, 0)
+        # Draw background (max health)
+        pygame.draw.rect(surface, (60, 0, 0), (x, y, width, height))
+        # Draw foreground (current health)
+        pygame.draw.rect(surface, (0, 200, 0), (x, y, int(width * ratio),   height))
+        # Optional: draw border
+        pygame.draw.rect(surface, (255, 255, 255), (x, y, width, height), 2)
+    
+    def draw_lives_counter(self,surface, x, y, font=None):
+        if font is None:
+            font = pygame.font.SysFont(None, 32)
+        lives_text = font.render(f"Lives: {self.lives}",     True,   (255, 255, 255))
+        surface.blit(lives_text, (x, y))
         
     def user_input(self, bullet_group, camera_group):
         self.velocity_x = 0 
@@ -110,15 +128,26 @@ class Player(pygame.sprite.Sprite) :
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
         
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
-    
+
+        self.lives = 3
+
     #method for shooting
     def is_shooting(self, bullet_group, camera_group):
         if self.shoot_cooldown == 0 :
             self.shoot_cooldown = settings.PLAYER_SHOOT_COOLDOWN
-            self.bullet = Bullet(pos = self.pos, angle = self.angle)    
+            self.bullet = Bullet(pos = self.pos, angle = self.angle, owner = "player")
             bullet_group.add(self.bullet)
             camera_group.add(self.bullet)
 
+    def check_bullet_collision(self, bullet_group):
+        for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
+            if bullet.owner == "enemy":
+                self.take_damage(settings.BULLET_DAMAGE)
+                bullet.kill()
+    
+    def take_damage(self,damage):
+        self.health -= damage
+        print(f"current health : {self.health}")
 
     def update(self, wall_rect, bullet_group, camera_group):
         
@@ -144,10 +173,13 @@ class Player(pygame.sprite.Sprite) :
             
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
+        
+        self.check_bullet_collision(bullet_group=bullet_group)
+        
         self.player_turning()
 
 
-class Enemy(pygame.sprite.Sprite):
+class NormalEnemy(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = pygame.transform.rotozoom(
@@ -161,7 +193,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.hitbox_rect.copy()
 
         self.speed = settings.NORMAL_ENEMY_SPEED
-        self.health = settings.NORMAL_ENEMY_HEALTH
+        self.health =  self.max_health = settings.NORMAL_ENEMY_HEALTH
         self.shoot_cooldown = 0
         self.pathfind_cooldown = settings.PATHFIND_COOLDOWN
         #path finding shenanigans
@@ -183,7 +215,13 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.base_sprite, -(self.angle + 90))
         
         self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
-
+    
+    def check_bullet_collision(self, bullet_group):
+        for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
+            if bullet.owner == "player":
+                self.take_damage(settings.BULLET_DAMAGE)
+                bullet.kill()
+    
     def shoot_at_player(self, player, bullet_group, camera_group):
         if self.shoot_cooldown == 0:
             # Calculate angle to player
@@ -191,7 +229,7 @@ class Enemy(pygame.sprite.Sprite):
             dy = player.pos.y - self.pos.y
             angle = math.degrees(math.atan2(dy, dx))
             # Create and add bullet
-            bullet = Bullet(pos=self.pos, angle=angle)
+            bullet = Bullet(pos=self.pos, angle=angle, owner = "enemy")
             bullet_group.add(bullet)
             camera_group.add(bullet)
             # Set cooldown (e.g., 30 frames for half a second at 60 fps)
@@ -204,6 +242,8 @@ class Enemy(pygame.sprite.Sprite):
         enemy_grid = world_to_grid(pos = self.pos, tileheight= tileheight, tilewidth=tilewidth)
         player_grid = world_to_grid(pos = player.pos, tileheight= tileheight, tilewidth=tilewidth)
         
+        self.check_bullet_collision(bullet_group=bullet_group)
+
         if enemy_grid != self.last_grid_pos or player_grid != self.last_player_grid_pos or not self.path:
             self.path = astar(grid, enemy_grid, player_grid)
             self.last_grid_pos = enemy_grid
@@ -256,4 +296,144 @@ class Enemy(pygame.sprite.Sprite):
         self.health -= amount
         if self.health <= 0:
             self.kill()
+
+class BruteEnemy(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.image = pygame.transform.rotozoom(
+            pygame.image.load(settings.BRUTE_ENEMY_IMAGE).convert_alpha(), 0, settings.BRUTE_ENEMY_SIZE
+        )
+
+        self.base_sprite = self.image
+
+        self.pos = pygame.math.Vector2(pos)
+        self.hitbox_rect = self.base_sprite.get_rect(center = self.pos)
+        self.rect = self.hitbox_rect.copy()
+
+        self.speed = settings.BRUTE_ENEMY_SPEED
+        self.health =  self.max_health = settings.NORMAL_ENEMY_HEALTH
+        self.shoot_cooldown = 0
+        self.pathfind_cooldown = settings.PATHFIND_COOLDOWN
+        #path finding shenanigans
+        self.path = []
+        self.last_grid_pos = None
+        self.last_player_grid_pos = None
+        self.out_of_range_timer = 0
+        self.grenade_cooldown = 0
+
+    def turn_towards_player(self, player):
+        player_x, player_y = player.pos
+        enemy_x , enemy_y = self.pos
+
+
+        #getting the angle -> theta = tan-1(change in y / change in x)
+        dx = (enemy_x - player_x)
+        dy = (enemy_y-player_y)
+        self.angle = math.degrees(math.atan2(dy, dx))
+
+        self.image = pygame.transform.rotate(self.base_sprite, -(self.angle + 90))
+        
+        self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
+
+    def shoot_at_player(self, player, bullet_group, camera_group):
+        if self.shoot_cooldown == 0:
+            # Calculate angle to player
+            dx = player.pos.x - self.pos.x
+            dy = player.pos.y - self.pos.y
+            angle = math.degrees(math.atan2(dy, dx))
+            # Create and add bullet
+            bullet = Bullet(pos=self.pos, angle=angle, owner = "enemy")
+            bullet_group.add(bullet)
+            camera_group.add(bullet)
+            # Set cooldown (e.g., 30 frames for half a second at 60 fps)
+            self.shoot_cooldown = settings.ENEMY_SHOOT_COOLDOWN
     
+
+    def throw_grenade(self, player, grenade_group, camera_group):
+        grenade = Grenade(
+            pos=self.pos,
+            target_pos=player.pos,
+            grenade_image=settings.GRENADE_IMAGE,
+            speed=settings.GRENADE_SPEED,
+            explosion_damage=settings.GRENADE_DAMAGE,
+            player = player
+        )
+        grenade_group.add(grenade)
+        camera_group.add(grenade)
+
+    def update(self, player, wall_rect, bullet_group, camera_group, grenade_group, grid, tmx_data):
+        # Simple AI: move toward player
+        
+        tilewidth,tileheight = tmx_data.tilewidth, tmx_data.tileheight
+        enemy_grid = world_to_grid(pos = self.pos, tileheight= tileheight, tilewidth=tilewidth)
+        player_grid = world_to_grid(pos = player.pos, tileheight= tileheight, tilewidth=tilewidth)
+        
+        if enemy_grid != self.last_grid_pos or player_grid != self.last_player_grid_pos or not self.path:
+            self.path = astar(grid, enemy_grid, player_grid)
+            self.last_grid_pos = enemy_grid
+            self.last_player_grid_pos = player_grid
+
+        self.check_bullet_collision(bullet_group=bullet_group)
+        
+        direction = pygame.math.Vector2(player.pos) - self.pos
+
+        if self.pathfind_cooldown == 0 and self.path and len(self.path) > 1:
+            next_cell = self.path[1]  # path[0] is current cell
+            target_x = next_cell[0] * tilewidth + tilewidth // 2
+            target_y = next_cell[1] * tileheight + tileheight // 2
+            target_pos = pygame.math.Vector2(target_x, target_y)
+    
+            direction = (target_pos - self.pos)
+            
+            if direction.length() > 0:
+                direction = direction.normalize()
+                next_pos = self.pos + direction * self.speed
+                self.rect.center = (int(self.pos.x), int(self.pos.y))
+
+                test_rect = self.rect.copy()
+                test_rect.center = next_pos
+                # Collision with walls
+                collided = False
+                for wall in wall_rect:
+                    if test_rect.colliderect(wall):
+                        collided = True
+                        break
+                    
+                if not collided:
+                    self.pos = next_pos
+
+        self.rect.center = self.pos
+        self.turn_towards_player(player)
+        distance = (player.pos - self.pos).length()
+        if distance < settings.BRUTE_ENEMY_RANGE:
+            self.shoot_at_player(player, bullet_group, camera_group)
+
+        if self.shoot_cooldown > 0 :
+            self.shoot_cooldown -= 1
+        if self.pathfind_cooldown > 0 :
+            self.pathfind_cooldown -= 1
+        
+        if distance > settings.GRENADE_RANGE_MIN :
+            self.out_of_range_timer += 1
+            if self.out_of_range_timer > settings.BRUTE_OUT_OF_RANGE_TIMER and self.grenade_cooldown == 0:
+                self.throw_grenade(player, grenade_group, camera_group)
+                self.grenade_cooldown = settings.GRENADE_COOLDOWN
+                self.out_of_range_timer = 0
+        else:
+            self.out_of_range_timer = 0
+
+        if self.grenade_cooldown > 0:
+            self.grenade_cooldown -= 1
+                # You can add more AI logic here (e.g.,     attack,     patrol, flee)
+    def check_bullet_collision(self, bullet_group):
+        for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
+            if bullet.owner == "player":
+                self.take_damage(settings.BULLET_DAMAGE)
+                bullet.kill()
+    
+    def take_damage(self, amount):
+        self.health -= amount
+        if self.health <= 0:
+            self.kill()
+
+

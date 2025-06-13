@@ -1,2 +1,2 @@
 
-    keys = pygame.key.get_pressed()
+            exit()

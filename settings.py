@@ -8,26 +8,46 @@ FPS = 60
 #Player settings
 PLAYER_START_X = 300
 PLAYER_START_Y = 300
-PLAYER_SPEED = 15
+PLAYER_SPEED = 20
 PLAYER_SIZE = 0.6
+PLAYER_HEALTH = 7
+PLAYER_SHOOT_COOLDOWN = 15
 
 #bullet settings
-PLAYER_SHOOT_COOLDOWN = 15
 ENEMY_SHOOT_COOLDOWN = 15
-BULLET_SPEED = 20
+BULLET_SPEED = 40
 BULLET_IMAGE = r".\Assets\bullet\bullet.png"
 BULLET_SIZE = 0.1
 BULLET_RANGE = 1000
+BULLET_DAMAGE = 1
 
+#grenade settings
+GRENADE_SIZE = 0.3
+GRENADE_IMAGE = r".\Assets\grenade.png"
+GRENADE_RANGE_MIN = 250
+GRENADE_SPEED =30
+GRENADE_FUSE = 37
+GRENADE_RADIUS = 50
+GRENADE_DAMAGE = 3
+GRENADE_COOLDOWN = 120
 
+EXPLOSION_IMAGE_PATH = r".\Assets\explosion"
+EXPLOSION_SCALE = 3
 
 #enemy settings
-NORMAL_ENEMY_RANGE = 2000
+
+NORMAL_ENEMY_RANGE = 1000
 NORMAL_ENEMY_IMAGE = r".\Assets\enemies\enemy_type_normal.png"
 NORMAL_ENEMY_SIZE = 0.5               # Scale factor
-NORMAL_ENEMY_SPEED = 10                # Pixels per frame
-NORMAL_ENEMY_HEALTH = 3               # Or whatever you want
+NORMAL_ENEMY_SPEED = 15                # Pixels per frame
+NORMAL_ENEMY_HEALTH = 5              # Or whatever you want
 
-
+BRUTE_ENEMY_IMAGE = r".\Assets\enemies\enemy_type_brute.png"
+BRUTE_ENEMY_SIZE = 0.5 
+BRUTE_ENEMY_SPEED = 13
+BRUTE_ENEMY_HEALTH = 10 
+BRUTE_ENEMY_RANGE = 1000
+BRUTE_OUT_OF_RANGE_TIMER = 120
 
 PATHFIND_COOLDOWN = 60
+
