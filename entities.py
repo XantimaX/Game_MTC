@@ -95,6 +95,12 @@ class Player(pygame.sprite.Sprite) :
             font = pygame.font.SysFont(None, 32)
         lives_text = font.render(f"Lives: {self.lives}",     True,   (255, 255, 255))
         surface.blit(lives_text, (x, y))
+    
+    def draw_waves_counter(self,surface,current_wave, x, y, font=None):
+        if font is None:
+            font = pygame.font.SysFont(None, 32)
+        wave_text = font.render(f"Wave {current_wave}",     True,   (255, 255, 255))
+        surface.blit(wave_text, (x, y))
         
     def user_input(self, bullet_group, camera_group):
         self.velocity_x = 0 

@@ -9,6 +9,8 @@ from random import randint
 from camera import Camera
 from stuffs import Bullet
 from pathfinding import mark_wall
+from timer import ElapsedTimer
+from waves import waves, spawn_wave
 pygame.init()
 
 #window initialization
@@ -75,25 +77,17 @@ for obj in tmx_data.objects:
 
 #Will change
 enemy_group = pygame.sprite.Group()
-
-enemy_spawn_pos1 = (400, 200)  # Or load from map/object layer
-enemy_spawn_pos2 = (400, 500)  # Or load from map/object layer
-enemy_spawn_pos3 = (400, 800)  # Or load from map/object layer
-enemy_spawn_pos4 = (400, 1000)  # Or load from map/object layer
-enemy = NormalEnemy(pos=enemy_spawn_pos1)
-enemy2 = NormalEnemy(pos=enemy_spawn_pos2)
-enemy3 = BruteEnemy(pos=enemy_spawn_pos3)
-enemy4 = BruteEnemy(pos=enemy_spawn_pos4)
-enemy_group.add(enemy)
-enemy_group.add(enemy2)
-enemy_group.add(enemy3)
-enemy_group.add(enemy4)
-
 explosion_group = pygame.sprite.Group()
 
-
-camera_group.add(*enemy_group)
                  
+#timer
+game_timer = ElapsedTimer()
+
+#game state
+current_wave = -1
+max_waves = len(waves)
+game_state = "playing"
+
 
 while True:
     keys = pygame.key.get_pressed()
@@ -102,6 +96,32 @@ while True:
             pygame.quit()
             exit()
     
+    if game_state == "playing" and len(enemy_group) == 0:
+        current_wave += 1
+        if current_wave < max_waves:
+            player.health = settings.PLAYER_HEALTH # refill health
+            spawn_wave(current_wave, enemy_group,   camera_group)
+        else:
+            game_state = "win"
+    
+    if game_state in ("win", "game_over"):
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key ==    pygame.K_r:
+                # Reset everything
+                current_wave = 0
+                player.lives = 3
+                player.health = player.max_health
+                player.respawn()
+                spawn_wave(current_wave, enemy_group,   camera_group)
+                game_state = "playing"
+
+    if game_state == "win":
+        pass
+    # Draw "You Win! Press R to restart"
+    elif game_state == "game_over":
+        pass
+    # Draw "Game Over! Press R to restart"
+
     player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
     bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
     grenade_group.update(player = player, explosion_group = explosion_group, camera_group = camera_group)
@@ -118,12 +138,21 @@ while True:
     screen.fill((0,0,0))
     camera_group.draw(screen)
     player.draw_health_bar(screen, 20, 20, 200, 20)
-    player.draw_lives_counter(screen, 20, 50)
+    player.draw_lives_counter(surface = screen, x= 20,  y =50)
+    player.draw_waves_counter(surface = screen,current_wave= current_wave+1, x =20, y = 80)
+    
+    font = pygame.font.SysFont(None, 36)
+    elapsed_seconds = game_timer.get_elapsed()
+    minutes = elapsed_seconds // 60
+    seconds = elapsed_seconds % 60
+    timer_text = font.render(f"Time: {minutes:02}:{seconds:02}", True, (255,255,255))
+    screen.blit(timer_text, (20, 120))
 
     if player.damage_overlay_alpha > 0:
         damage_overlay = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA)
         damage_overlay.fill((255, 0, 0, int(player. damage_overlay_alpha)))  # RGBA
         screen.blit(damage_overlay, (0, 0))
-        
+
+
     pygame.display.update()
     clock.tick(settings.FPS)
