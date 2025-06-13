@@ -114,12 +114,16 @@ while True:
         else :
             enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, bullet_group = bullet_group, tmx_data=tmx_data, grid = grid)
         pygame.draw.rect(screen, (255, 0, 0), enemy.rect, 2)
-
     
     screen.fill((0,0,0))
     camera_group.draw(screen)
     player.draw_health_bar(screen, 20, 20, 200, 20)
     player.draw_lives_counter(screen, 20, 50)
 
+    if player.damage_overlay_alpha > 0:
+        damage_overlay = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA)
+        damage_overlay.fill((255, 0, 0, int(player. damage_overlay_alpha)))  # RGBA
+        screen.blit(damage_overlay, (0, 0))
+        
     pygame.display.update()
     clock.tick(settings.FPS)

@@ -38,8 +38,16 @@ class Player(pygame.sprite.Sprite) :
         self.shoot = False
         self.shoot_cooldown = 0
         
+        self.lives = 3
+
         self.health = settings.PLAYER_HEALTH
-        
+        self.spawn_point = (settings.PLAYER_START_X, settings.PLAYER_START_Y)
+
+        self.damage_overlay_alpha = 0
+        self.damage_overlay_max_alpha = 120  # Adjust for how       "red" you want
+        self.damage_overlay_fade_rate = 10   # How fast the red         fades
+        self.took_damage = False
+
     def move(self, wall_rect):
         #Move in X first 
         self.pos.x += self.velocity_x
@@ -128,8 +136,8 @@ class Player(pygame.sprite.Sprite) :
         self.image = pygame.transform.rotate(self.base_sprite, -self.angle)
         
         self.rect = self.image.get_rect(center = self.hitbox_rect.center)
+        
 
-        self.lives = 3
 
     #method for shooting
     def is_shooting(self, bullet_group, camera_group):
@@ -145,8 +153,26 @@ class Player(pygame.sprite.Sprite) :
                 self.take_damage(settings.BULLET_DAMAGE)
                 bullet.kill()
     
+    def respawn(self) :
+        self.health = settings.PLAYER_HEALTH
+        self.pos = pygame.math.Vector2(self.spawn_point)
+        self.rect.center = self.pos
+
+    def game_over(self):
+        print("Game Over")
+    
     def take_damage(self,damage):
         self.health -= damage
+
+        self.damage_overlay_alpha = self.damage_overlay_max_alpha  # Trigger red flash
+        self.took_damage = True
+        if self.health <= 0:
+            self.lives -= 1
+            if self.lives > 0:
+                self.respawn()
+            else:
+                self.game_over()
+        
         print(f"current health : {self.health}")
 
     def update(self, wall_rect, bullet_group, camera_group):
@@ -154,6 +180,8 @@ class Player(pygame.sprite.Sprite) :
         self.user_input(bullet_group=bullet_group, camera_group = camera_group, )
         self.move(wall_rect = wall_rect)
         
+        if self.damage_overlay_alpha > 0:
+            self.damage_overlay_alpha = max(0, self.damage_overlay_alpha - self.damage_overlay_fade_rate)
         
         self.rect.center = (int(self.pos.x), int(self.pos.y))
         
