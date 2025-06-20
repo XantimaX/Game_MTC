@@ -29,7 +29,7 @@ pygame.display.set_caption("Top Down Shooter")
 clock = pygame.time.Clock()
 
 #load map
-tmx_data = load_pygame(r"C:\Users\oldem\Desktop\MTC_Level\map.tmx")
+tmx_data = load_pygame(r"./Assets/MTC_Level/map.tmx")
 
 
 #initializing grid of the map
