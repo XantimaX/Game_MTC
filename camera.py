@@ -1,6 +1,6 @@
 import pygame
 import settings
-from entities import NormalEnemy, BruteEnemy
+from entities import NormalEnemy, BruteEnemy,BossEnemy
 from stuffs import Grenade
 
 class Camera(pygame.sprite.Group):
@@ -32,7 +32,7 @@ class Camera(pygame.sprite.Group):
                 offset_pos = sprite.rect.topleft - self.camera_offset
                 temp_surface.blit(sprite.image, offset_pos)
             
-            if isinstance(sprite, NormalEnemy) or isinstance(sprite, BruteEnemy): 
+            if isinstance(sprite, (NormalEnemy,BruteEnemy, BossEnemy))  : 
                     bar_width = sprite.rect.width
                     bar_height = 5
                     bar_x = sprite.rect.left - self.camera_offset.x

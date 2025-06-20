@@ -2,15 +2,17 @@ import pygame
 from sys import exit
 import math
 import settings
-from entities import Player, NormalEnemy, BruteEnemy
+from entities import Player, NormalEnemy, BruteEnemy, BossEnemy
 from pytmx.util_pygame import load_pygame
 from tiles import Tile
 from random import randint
 from camera import Camera
-from stuffs import Bullet
+from stuffs import Bullet,Grenade,Explosion
 from pathfinding import mark_wall
 from timer import ElapsedTimer
 from waves import waves, spawn_wave
+from menus import main_menu, show_game_over_screen, show_win_screen
+from sounds import combat_song, boss_song
 pygame.init()
 
 #window initialization
@@ -56,9 +58,6 @@ wall_rect = []
 
 tile_w = tmx_data.tilewidth
 tile_h = tmx_data.tileheight
-scaled_tile_w = int(tile_w * ZOOM)
-scaled_tile_h = int(tile_h * ZOOM)
-
 for layer in tmx_data.layers:
     if hasattr(layer, "data") :
         for x,y,surf in layer.tiles():
@@ -89,7 +88,15 @@ max_waves = len(waves)
 game_state = "playing"
 
 
+main_menu(screen = screen, clock = clock)
+
+combat_song()
+start_time = pygame.time.get_ticks()
+
+is_boss_song = False
+
 while True:
+
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -104,31 +111,50 @@ while True:
         else:
             game_state = "win"
     
+    if (player.health <= 0) :
+        game_state = "game_over"
+
+
+
     if game_state in ("win", "game_over"):
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key ==    pygame.K_r:
-                # Reset everything
-                current_wave = 0
-                player.lives = 3
-                player.health = player.max_health
-                player.respawn()
-                spawn_wave(current_wave, enemy_group,   camera_group)
-                game_state = "playing"
+    
+        for sprite in list(camera_group):
+            if isinstance(sprite, (NormalEnemy, BruteEnemy,BossEnemy,Bullet,Grenade,Explosion)):
+                camera_group.remove(sprite)
+    
+        enemy_group.empty()       # Remove all existing enemies
+        bullet_group.empty()      # Remove bullets if you want aclean slate
+        grenade_group.empty()     # Remove grenades
+        explosion_group.empty()   # Remove explosions   
 
-    if game_state == "win":
-        pass
-    # Draw "You Win! Press R to restart"
-    elif game_state == "game_over":
-        pass
-    # Draw "Game Over! Press R to restart"
+        if game_state == "win":
+            elapsed_seconds  = (pygame.time.get_ticks() - start_time)//1000
+            show_win_screen(screen=screen, elapsed_seconds=elapsed_seconds, lives_left=player.lives)
+        # Draw "You Win! Press R to restart"
+        elif game_state == "game_over":
+            show_game_over_screen(screen=screen)
+        current_wave = -1
+        player.lives = 3
+        player.health = settings.PLAYER_HEALTH
+        game_state = "playing"
+        start_time = pygame.time.get_ticks()
+        player.respawn()
+        is_boss_song = False
+        combat_song()
+        
+        continue
 
+    if current_wave == 3 and not is_boss_song :
+        is_boss_song = True
+        boss_song()
+    
     player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
     bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
     grenade_group.update(player = player, explosion_group = explosion_group, camera_group = camera_group)
     explosion_group.update()
     
     for enemy in enemy_group :
-        if isinstance(enemy, BruteEnemy) :
+        if isinstance(enemy, (BruteEnemy,BossEnemy)) :
             enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, grenade_group=grenade_group, bullet_group = bullet_group, tmx_data=tmx_data, grid = grid)
             
         else :
@@ -142,7 +168,7 @@ while True:
     player.draw_waves_counter(surface = screen,current_wave= current_wave+1, x =20, y = 80)
     
     font = pygame.font.SysFont(None, 36)
-    elapsed_seconds = game_timer.get_elapsed()
+    elapsed_seconds  = (pygame.time.get_ticks() - start_time)//1000
     minutes = elapsed_seconds // 60
     seconds = elapsed_seconds % 60
     timer_text = font.render(f"Time: {minutes:02}:{seconds:02}", True, (255,255,255))
