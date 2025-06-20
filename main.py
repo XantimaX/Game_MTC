@@ -7,7 +7,7 @@ from pytmx.util_pygame import load_pygame
 from tiles import Tile
 from random import randint
 from camera import Camera
-from stuffs import Bullet,Grenade,Explosion
+from projectiles import Bullet,Grenade,Explosion
 from pathfinding import mark_wall
 from timer import ElapsedTimer
 from waves import waves, spawn_wave

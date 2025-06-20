@@ -2,7 +2,7 @@ import pygame
 import json
 import settings
 import math
-from stuffs import Bullet, Grenade
+from projectiles import Bullet, Grenade
 from pathfinding import world_to_grid, astar
 from sounds import shoot_sound,hit_sound
 
