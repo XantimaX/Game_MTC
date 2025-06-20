@@ -19,7 +19,7 @@ class Camera(pygame.sprite.Group):
         self.camera_offset.x = self.player.rect.centerx - (settings.WIDTH / (2 * self.zoom))
         self.camera_offset.y = self.player.rect.centery - (settings.HEIGHT / (2 * self.zoom))
 
-        #temp surface for zooming
+        #Initial to surface to add all the things. This will then be scaled.
         temp_surface = pygame.Surface(
             (int(surface.get_width() / self.zoom), int(surface.get_height() / self.zoom))
         ).convert_alpha()

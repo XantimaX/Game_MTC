@@ -33,7 +33,7 @@ def main_menu(screen,clock):
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.collidepoint(event.pos):
-                    menu_running = False  # Start the game
+                    menu_running = False 
                 if quit_button.collidepoint(event.pos):
                     pygame.quit()
                     exit()
@@ -45,7 +45,7 @@ def show_game_over_screen(screen):
     gameover_song()
     font = pygame.font.SysFont(None, 72)
     small_font = pygame.font.SysFont(None, 36)
-    screen.fill((30, 0, 0))  # Dark background
+    screen.fill((30, 0, 0))  # Dark Red background
 
     # Game Over text
     game_over_text = font.render("Game Over", True, (255, 0, 0))
@@ -95,13 +95,14 @@ def show_win_screen(screen, elapsed_seconds, lives_left):
     score = lives_left * 1000 + time_score
     score_text = small_font.render(f"Score: {score}", True, (255, 255, 0))
     screen.blit(score_text, (settings.WIDTH//2 - score_text.get_width()//2, settings.HEIGHT//2 + 30))
-    # Restart prompt
+    
+    # Restart button
     restart_text = small_font.render("Press R to Restart or Q to Quit", True, (255, 255, 255))
     screen.blit(restart_text, (settings.WIDTH//2 - restart_text.get_width()//2, settings.HEIGHT//2 + 60))
 
     pygame.display.update()
 
-    # Wait for user input
+    #waiting for user input
     waiting = True
     while waiting:
         for event in pygame.event.get():

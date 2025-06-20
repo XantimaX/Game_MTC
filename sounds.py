@@ -4,15 +4,15 @@ import settings
 pygame.init()
 pygame.mixer.init()
 
-# Load sounds
-
-
-# Load and play music
 
 shoot_sound = pygame.mixer.Sound(settings.SHOOT_SOUND)
 shoot_sound.set_volume(0.2)
 
+hit_sound = pygame.mixer.Sound(settings.HIT_SOUND)
+hit_sound.set_volume(0.2)
 
+explosion_sound = pygame.mixer.Sound(settings.EXPLOSION_SOUND)
+explosion_sound.set_volume(0.4)
 
 def combat_song():
     pygame.mixer.music.load(r"Assets\music\bfg_10000.wav")

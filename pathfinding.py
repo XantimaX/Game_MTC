@@ -1,9 +1,6 @@
 import heapq
 import math
 
-
-
-
 def world_to_grid(pos, tilewidth, tileheight):
     grid_x = int(pos[0] // tilewidth)
     grid_y = int(pos[1] // tileheight)

@@ -13,10 +13,9 @@ class ElapsedTimer:
 
     def get_elapsed(self):
         if self.paused:
-            return (self.pause_time - self.start_time) // 1000  # in seconds
+            return (self.pause_time - self.start_time) // 1000 
         else:
-            return (pygame.time.get_ticks() - self.start_time) // 1000  # in seconds
-
+            return (pygame.time.get_ticks() - self.start_time) // 1000 
     def pause(self):
         if not self.paused:
             self.paused = True

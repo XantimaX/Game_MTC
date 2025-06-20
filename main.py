@@ -15,6 +15,9 @@ from menus import main_menu, show_game_over_screen, show_win_screen
 from sounds import combat_song, boss_song
 pygame.init()
 
+#no of channels
+pygame.mixer.set_num_channels(16)
+
 #window initialization
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 pygame.display.set_caption("Top Down Shooter")
@@ -31,18 +34,17 @@ grid = [[0 for _ in range(grid_height)] for _ in range(grid_width)]
 
 #map setup
 global map_width, map_height
-
 map_width = tmx_data.width * tmx_data.tilewidth
 map_height = tmx_data.height * tmx_data.tileheight
-
 map_surface = pygame.Surface((map_width, map_height))
 
+#creating groups
 sprite_group =  pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 grenade_group = pygame.sprite.Group()
 
-#constants
-ZOOM = 0.5
+
+
 
 
 #creating sprites
@@ -52,7 +54,7 @@ moving_sprites.add(player)
 
 
 #creating camera
-camera_group = Camera(player = player,zoom = ZOOM)
+camera_group = Camera(player = player,zoom = settings.ZOOM)
 camera_group.add(*moving_sprites)
 wall_rect = []
 

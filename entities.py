@@ -4,7 +4,7 @@ import settings
 import math
 from stuffs import Bullet, Grenade
 from pathfinding import world_to_grid, astar
-from sounds import shoot_sound
+from sounds import shoot_sound,hit_sound
 
 entities_stuffs = json.load(open(r".\locations.json", "r"))
 
@@ -271,6 +271,7 @@ class NormalEnemy(pygame.sprite.Sprite):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
                 self.take_damage(settings.BULLET_DAMAGE)
+                
                 bullet.kill()
     
     def shoot_at_player(self, player, bullet_group, camera_group):
@@ -342,9 +343,9 @@ class NormalEnemy(pygame.sprite.Sprite):
             self.shoot_cooldown -= 1
         if self.pathfind_cooldown > 0 :
             self.pathfind_cooldown -= 1
-        # You can add more AI logic here (e.g., attack, patrol, flee)
 
     def take_damage(self, amount):
+        hit_sound.play()
         self.health -= amount
         if self.health <= 0:
             self.kill()
@@ -367,6 +368,7 @@ class BruteEnemy(pygame.sprite.Sprite):
         self.health =  self.max_health = settings.BRUTE_ENEMY_HEALTH
         self.shoot_cooldown = 0
         self.pathfind_cooldown = settings.PATHFIND_COOLDOWN
+
         #path finding shenanigans
         self.path = []
         self.last_grid_pos = None
@@ -483,9 +485,11 @@ class BruteEnemy(pygame.sprite.Sprite):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
                 self.take_damage(settings.BULLET_DAMAGE)
+                
                 bullet.kill()
     
     def take_damage(self, amount):
+        hit_sound.play()
         self.health -= amount
         if self.health <= 0:
             self.kill()
@@ -621,10 +625,13 @@ class BossEnemy(pygame.sprite.Sprite):
     def check_bullet_collision(self, bullet_group):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
+                
                 self.take_damage(settings.BULLET_DAMAGE)
+               
                 bullet.kill()
     
     def take_damage(self, amount):
+        hit_sound.play()
         self.health -= amount
         if self.health <= 0:
             self.kill()

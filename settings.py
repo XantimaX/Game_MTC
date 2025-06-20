@@ -76,3 +76,8 @@ MTC_HEIGHT = 100
 
 #SFX
 SHOOT_SOUND = r".\Assets\sfx\laser.mp3"
+HIT_SOUND = r".\Assets\sfx\hit_soundeffect.wav"
+EXPLOSION_SOUND = r".\Assets\sfx\explosion.mp3"
+
+#zoom
+ZOOM = 0.5

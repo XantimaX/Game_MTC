@@ -3,12 +3,12 @@ import math
 import settings
 import math
 import os
+from sounds import explosion_sound
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, angle, owner):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load(settings.BULLET_IMAGE).convert_alpha(), 0, settings.BULLET_SIZE)
-        # pygame.draw.rect(self.image, (255, 255, 0), self.image.get_rect())
         self.image = pygame.transform.rotate(self.image, -angle)
 
         self.rect = self.image.get_rect(center=pos)
@@ -27,30 +27,26 @@ class Bullet(pygame.sprite.Sprite):
         
         distance_travelled = self.initial_pos.distance_to(pygame.Vector2(self.rect.center))
 
-        #if outside the range
         if (distance_travelled >= settings.BULLET_RANGE):
             self.kill()
 
-        # Remove if off screen
+        #remove if offscreen
         if (self.rect.right < 0 or self.rect.left > map_width or
             self.rect.bottom < 0 or self.rect.top > map_height):
             self.kill()
 
-        #wall collision
+        #kill if it collides with a wall
         for wall in wall_rect:
             if self.rect.colliderect(wall):
                 self.kill()
 
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, center):
-        """
-        center: (x, y) tuple for explosion center
-        scale: float, scale factor for explosion images
-        frame_paths: list of file paths to explosion animation frames
-        """
+
         super().__init__()
         self.images = []
-        # Load and scale frames
+
+        #to animate the explosion.
         frame_paths = os.listdir(settings.EXPLOSION_IMAGE_PATH)
         scale = settings.EXPLOSION_SCALE
         if frame_paths is not None:
@@ -63,7 +59,6 @@ class Explosion(pygame.sprite.Sprite):
                     )
                 self.images.append(img)
         else:
-            # Fallback: load default frames if provided elsewhere
             raise ValueError("No explosion frame paths provided.")
 
         self.frame_index = 0
@@ -71,7 +66,8 @@ class Explosion(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = center
         self.counter = 0
-        self.frame_speed = 4  # Higher = slower animation
+
+        self.frame_speed = 4 #change this to increase or decrease animation speed
 
     def update(self):
         self.counter += 1
@@ -98,7 +94,7 @@ class Grenade(pygame.sprite.Sprite):
         if direction.length() > 0:
             direction = direction.normalize()
         self.velocity = direction * speed
-        self.timer = settings.GRENADE_FUSE  # frames or milliseconds
+        self.timer = settings.GRENADE_FUSE
         self.explosion_damage = explosion_damage
         self.player = player
 
@@ -108,7 +104,6 @@ class Grenade(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
         # Countdown timer
-        # self.timer -= 1
         if self.rect.colliderect(player):
             self.explode(explosion_group, camera_group)
             self.player.take_damage(settings.GRENADE_DAMAGE)
@@ -118,7 +113,7 @@ class Grenade(pygame.sprite.Sprite):
         explosion = Explosion(self.pos)
         explosion_group.add(explosion)
         camera_group.add(explosion)
-
+        explosion_sound.play()
         self.kill()
 
                 
