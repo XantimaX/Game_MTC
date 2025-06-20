@@ -18,6 +18,11 @@ pygame.init()
 #no of channels
 pygame.mixer.set_num_channels(16)
 
+
+mtc_icon = pygame.image.load(settings.MTC_LOGO)
+pygame.display.set_icon(mtc_icon)
+
+
 #window initialization
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 pygame.display.set_caption("Top Down Shooter")
