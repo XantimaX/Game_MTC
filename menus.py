@@ -90,7 +90,7 @@ def show_win_screen(screen, elapsed_seconds, lives_left):
     screen.blit(time_text, (settings.WIDTH//2 - time_text.get_width()//2, settings.HEIGHT//2 - 40))
     screen.blit(lives_text, (settings.WIDTH//2 - lives_text.get_width()//2, settings.HEIGHT//2))
 
-    time_score = 3000 if elapsed_seconds < 240 else (2000 if elapsed_seconds < 300 else (1000 if elapsed_seconds < 360 else 0))
+    time_score = 3000 if elapsed_seconds < 180 else (2000 if elapsed_seconds < 240 else (1000 if elapsed_seconds < 300 else 0))
 
     score = lives_left * 1000 + time_score
     score_text = small_font.render(f"Score: {score}", True, (255, 255, 0))

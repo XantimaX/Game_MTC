@@ -1,7 +1,7 @@
 import pygame
 import settings
 from entities import NormalEnemy, BruteEnemy,BossEnemy
-from projectiles import Grenade
+from things import Grenade
 
 class Camera(pygame.sprite.Group):
     def __init__(self, zoom, player):

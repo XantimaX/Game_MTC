@@ -3,6 +3,7 @@ import math
 import settings
 import math
 import os
+from random import random, randint
 from sounds import explosion_sound
 
 class Bullet(pygame.sprite.Sprite):
@@ -115,6 +116,54 @@ class Grenade(pygame.sprite.Sprite):
         camera_group.add(explosion)
         explosion_sound.play()
         self.kill()
+
+
+class PowerUp(pygame.sprite.Sprite):
+        def __init__(self):
+            super().__init__()
+            self.image = pygame.transform.rotozoom(pygame.image.load(settings.POWERUP_IMAGE).convert_alpha(), 0, settings.POWERUP_SIZE)
+            self.rect = None
+            self.pos = None
+            self.type = "speed_damage_boost" 
+            self.is_taken = False
+            self.spawned = False
+        def drop_powerup(self, player,wall_rect, camera_group, powerup_group):
+            if not self.is_taken :
+                max_attempts = 100
+                attempts = 0
+                while attempts <= max_attempts:
+                    x = randint(0, settings.WIDTH-1)
+                    y = randint(0, settings.HEIGHT-1)
+                    test_rect = pygame.Rect(x - settings.POWERUP_SIZE//2, y - settings.POWERUP_SIZE//2, settings.POWERUP_SIZE, settings.POWERUP_SIZE)
+
+                    distance = math.hypot(x - player.pos[0], y - player.pos[1])
+                    if (distance <= settings.POWERUP_SAFE_DISTANCE) :
+                        attempt += 1
+                        continue
+                    
+                    no_collision = True
+
+                    for wall in wall_rect :
+                        if test_rect.colliderect(wall):
+                            no_collision = False
+                            break
+                    
+                    if no_collision :
+                        self.pos = (x,y)
+                        self.rect = self.image.get_rect(center=self.pos)       
+                        self.spawned = True     
+                        camera_group.add(self)
+                        powerup_group.add(self)
+                        return  
+                
+                    attempts+=1       
+
+        def update(self,player, camera_group, powerup_group, wall_rect):
+            self.is_taken = player.taken_power
+            if not self.is_taken and not self.spawned :
+                self.drop_powerup(camera_group=camera_group, player = player, wall_rect=wall_rect, powerup_group = powerup_group)   
+            
+            
 
                 
 

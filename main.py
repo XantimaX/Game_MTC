@@ -7,7 +7,7 @@ from pytmx.util_pygame import load_pygame
 from tiles import Tile
 from random import randint
 from camera import Camera
-from projectiles import Bullet,Grenade,Explosion
+from things import Bullet,Grenade,Explosion, PowerUp
 from pathfinding import mark_wall
 from timer import ElapsedTimer
 from waves import waves, spawn_wave
@@ -47,9 +47,10 @@ map_surface = pygame.Surface((map_width, map_height))
 sprite_group =  pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 grenade_group = pygame.sprite.Group()
+powerup_group = pygame.sprite.Group()
 
 
-
+powerup = PowerUp()
 
 
 #creating sprites
@@ -74,6 +75,7 @@ for layer in tmx_data.layers:
 
 
 
+
 for obj in tmx_data.objects:
     if obj.name == "wall":
         mark_wall(grid=grid, grid_height=grid_height, grid_width=grid_width, tile_object=obj, tile_height= tmx_data.tileheight, tile_width = tmx_data.tilewidth)
@@ -81,7 +83,6 @@ for obj in tmx_data.objects:
         scaled_image = pygame.transform.scale(obj.image, (int(obj.width), int(obj.height)))
         camera_group.add(Tile(pos = (obj.x, obj.y), surf = scaled_image, groups = sprite_group))
 
-#Will change
 enemy_group = pygame.sprite.Group()
 explosion_group = pygame.sprite.Group()
 
@@ -145,7 +146,7 @@ while True:
         player.health = settings.PLAYER_HEALTH
         game_state = "playing"
         start_time = pygame.time.get_ticks()
-        player.respawn()
+        player.respawn(invincible = False)
         is_boss_song = False
         combat_song()
         
@@ -155,11 +156,16 @@ while True:
         is_boss_song = True
         boss_song()
     
-    player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group)
     bullet_group.update(map_width = map_width, map_height=map_height, wall_rect = wall_rect)
     grenade_group.update(player = player, explosion_group = explosion_group, camera_group = camera_group)
     explosion_group.update()
-    
+
+    player.update(wall_rect=wall_rect, bullet_group=bullet_group, camera_group=camera_group, powerup_group=powerup_group)
+
+    if settings.POWERUP_SPAWN:
+        powerup.update(player = player, camera_group = camera_group, wall_rect = wall_rect,powerup_group = powerup_group)
+
+
     for enemy in enemy_group :
         if isinstance(enemy, (BruteEnemy,BossEnemy)) :
             enemy.update(player = player, wall_rect =  wall_rect, camera_group = camera_group, grenade_group=grenade_group, bullet_group = bullet_group, tmx_data=tmx_data, grid = grid)
@@ -181,9 +187,15 @@ while True:
     timer_text = font.render(f"Time: {minutes:02}:{seconds:02}", True, (255,255,255))
     screen.blit(timer_text, (20, 120))
 
+    if player.taken_power and player.powerup_time > 0:
+        font = pygame.font.SysFont(None, 36)
+        seconds_left = max(1, player.powerup_time // 60)
+        timer_text = font.render(f"Powerup: {seconds_left}s", True, (255, 255, 0))
+        screen.blit(timer_text, (20, 160))
+
     if player.damage_overlay_alpha > 0:
         damage_overlay = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA)
-        damage_overlay.fill((255, 0, 0, int(player. damage_overlay_alpha)))  # RGBA
+        damage_overlay.fill((255, 0, 0, int(player.damage_overlay_alpha)))
         screen.blit(damage_overlay, (0, 0))
 
 

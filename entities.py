@@ -2,7 +2,7 @@ import pygame
 import json
 import settings
 import math
-from projectiles import Bullet, Grenade
+from things import Bullet, Grenade
 from pathfinding import world_to_grid, astar
 from sounds import shoot_sound,hit_sound
 
@@ -22,12 +22,12 @@ class Player(pygame.sprite.Sprite) :
         self.move_frame_index = 0
         self.move_animation_time = 100
         self.last_move_update = pygame.time.get_ticks()
-
+        self.bullet_damage = settings.BULLET_DAMAGE 
 
         self.pos = pygame.math.Vector2(settings.PLAYER_START_X, settings.PLAYER_START_Y)
 
         self.image = self.idle_frames[0]
-        self.base_sprite = self.image
+        self.base_sprite = self.idle_frames[0]
         
 
 
@@ -44,14 +44,21 @@ class Player(pygame.sprite.Sprite) :
         self.health = settings.PLAYER_HEALTH
         self.spawn_point = (settings.PLAYER_START_X, settings.PLAYER_START_Y)
 
+        #damage effect
         self.damage_overlay_alpha = 0
-        self.damage_overlay_max_alpha = 120  # Adjust for how       "red" you want
-        self.damage_overlay_fade_rate = 10   # How fast the red         fades
+        self.damage_overlay_max_alpha = 120 
+        self.damage_overlay_fade_rate = 10   
         self.took_damage = False
         self.angle = 0
 
-        self.invincible = True
+        self.invincible = False
         self.invincible_time = 0
+        self.is_transparent = False
+
+        self.powerup_time = 0
+        self.taken_power = False
+        self.power_expired = False
+
 
     def move(self, wall_rect):
         #Move in X first 
@@ -172,13 +179,19 @@ class Player(pygame.sprite.Sprite) :
                 self.take_damage(settings.BOSS_ENEMY_DAMAGE)
                 bullet.kill()
     
-    def respawn(self) :
-        self.invincible = True
-        self.invincible_time = pygame.time.get_ticks()+3000
+    def respawn(self,invincible = True) :
+        
+        self.invincible = invincible
+        self.invincible_time = pygame.time.get_ticks()+5000 if self.invincible else pygame.time.get_ticks()
         self.health = settings.PLAYER_HEALTH
         self.pos = pygame.math.Vector2(self.spawn_point)
         self.rect.center = self.pos
-    
+        self.taken_power = False
+        self.damage = settings.BULLET_DAMAGE
+        self.speed = settings.PLAYER_SPEED
+        self.powerup_time = 0
+
+
     def take_damage(self,damage):
         if self.invincible :
             return
@@ -192,7 +205,18 @@ class Player(pygame.sprite.Sprite) :
             if self.lives > -1:
                 self.respawn()
 
-    def update(self, wall_rect, bullet_group, camera_group):
+    def powerup_boost(self, powerup_group):
+        
+        collected = pygame.sprite.spritecollide(self, powerup_group, dokill=True)
+
+        if collected :
+            self.taken_power = True
+            collected[0].spawned = False
+
+    #Make player bit reddish after collecting powerup
+
+
+    def update(self, wall_rect, bullet_group, camera_group, powerup_group):
         
         self.user_input(bullet_group=bullet_group, camera_group = camera_group, )
         self.move(wall_rect = wall_rect)
@@ -219,14 +243,36 @@ class Player(pygame.sprite.Sprite) :
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
         
+        #Respawn invinciblity
+        
         if pygame.time.get_ticks() >= self.invincible_time :
+            print("Finish")
             self.invincible = False
-        if self.invincible:
-            self.image.set_alpha(50)  # semi-transparent
-        else:
-            self.image.set_alpha(255)  # fully opaque
+            self.base_sprite.set_alpha(255) 
+            self.is_transparent = False
+            
         self.check_bullet_collision(bullet_group=bullet_group)
         
+        if self.invincible :
+            self.base_sprite.set_alpha(50)
+
+        #powerup
+        if self.powerup_time != 0 :
+            self.powerup_time -= 1
+        
+        if self.powerup_time == 0 :
+            self.taken_power = False
+            self.damage = settings.BULLET_DAMAGE
+            self.speed = settings.PLAYER_SPEED
+        
+        self.powerup_boost(powerup_group=powerup_group)
+        if self.taken_power and self.powerup_time == 0:
+            self.powerup_time = settings.POWERUP_TIME
+            self.speed = settings.BOOSTED_PLAYER_SPEED
+            self.damage = settings.BOOSTED_BULLET_DAMAGE
+        
+        if not self.invincible :
+            self.base_sprite = self.idle_frames[0]
         self.player_turning()
 
 
@@ -267,10 +313,11 @@ class NormalEnemy(pygame.sprite.Sprite):
         
         self.rect = self.image.get_rect(center=(int(self.pos.x), int(self.pos.y)))
     
-    def check_bullet_collision(self, bullet_group):
+    def check_bullet_collision(self, player,bullet_group):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
-                self.take_damage(settings.BULLET_DAMAGE)
+                damage = settings.BOOSTED_BULLET_DAMAGE if player.taken_power else settings.BULLET_DAMAGE
+                self.take_damage(damage)
                 
                 bullet.kill()
     
@@ -295,7 +342,7 @@ class NormalEnemy(pygame.sprite.Sprite):
         enemy_grid = world_to_grid(pos = self.pos, tileheight= tileheight, tilewidth=tilewidth)
         player_grid = world_to_grid(pos = player.pos, tileheight= tileheight, tilewidth=tilewidth)
         
-        self.check_bullet_collision(bullet_group=bullet_group)
+        self.check_bullet_collision(bullet_group=bullet_group, player = player)
 
         if enemy_grid != self.last_grid_pos or player_grid != self.last_player_grid_pos or not self.path:
             self.path = astar(grid, enemy_grid, player_grid)
@@ -429,7 +476,7 @@ class BruteEnemy(pygame.sprite.Sprite):
             self.last_grid_pos = enemy_grid
             self.last_player_grid_pos = player_grid
 
-        self.check_bullet_collision(bullet_group=bullet_group)
+        self.check_bullet_collision(bullet_group=bullet_group, player = player)
         
         direction = pygame.math.Vector2(player.pos) - self.pos
 
@@ -481,10 +528,11 @@ class BruteEnemy(pygame.sprite.Sprite):
         if self.grenade_cooldown > 0:
             self.grenade_cooldown -= 1
                 # You can add more AI logic here (e.g.,     attack,     patrol, flee)
-    def check_bullet_collision(self, bullet_group):
+    def check_bullet_collision(self, player ,bullet_group):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
-                self.take_damage(settings.BULLET_DAMAGE)
+                damage = settings.BOOSTED_BULLET_DAMAGE if player.taken_power else settings.BULLET_DAMAGE
+                self.take_damage(damage)
                 
                 bullet.kill()
     
@@ -571,7 +619,7 @@ class BossEnemy(pygame.sprite.Sprite):
             self.last_grid_pos = enemy_grid
             self.last_player_grid_pos = player_grid
 
-        self.check_bullet_collision(bullet_group=bullet_group)
+        self.check_bullet_collision(bullet_group=bullet_group, player = player)
         
         direction = pygame.math.Vector2(player.pos) - self.pos
 
@@ -622,12 +670,12 @@ class BossEnemy(pygame.sprite.Sprite):
         if self.grenade_cooldown > 0:
             self.grenade_cooldown -= 1
                 # You can add more AI logic here (e.g.,     attack,     patrol, flee)
-    def check_bullet_collision(self, bullet_group):
+    def check_bullet_collision(self, player, bullet_group):
         for bullet in pygame.sprite.spritecollide(self, bullet_group, False):
             if bullet.owner == "player":
                 
-                self.take_damage(settings.BULLET_DAMAGE)
-               
+                damage = settings.BOOSTED_BULLET_DAMAGE if player.taken_power else settings.BULLET_DAMAGE
+                self.take_damage(damage)
                 bullet.kill()
     
     def take_damage(self, amount):

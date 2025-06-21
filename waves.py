@@ -7,11 +7,11 @@ waves = [
         {"type": "NormalEnemy", "pos": (1000, 500)}
     ],
     [  # Wave 2
-        {"type": "NormalEnemy", "pos": (300, 200)},
+        {"type": "NormalEnemy", "pos": (1400, 200)},
         {"type": "BruteEnemy", "pos": (1800, 400)},
         {"type": "BruteEnemy", "pos": (1800, 200)},
         {"type": "NormalEnemy", "pos": (1600, 500)},
-        {"type": "NormalEnemy", "pos": (300, 500)},
+        {"type": "NormalEnemy", "pos": (1400, 500)},
     ],
     [  # Wave 3
         {"type": "BruteEnemy", "pos": (400, 800)},
