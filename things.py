@@ -128,12 +128,14 @@ class PowerUp(pygame.sprite.Sprite):
             self.is_taken = False
             self.spawned = False
         def drop_powerup(self, player,wall_rect, camera_group, powerup_group):
-            if not self.is_taken :
-                max_attempts = 100
+            if not self.is_taken and random() <= 0.2 :
+                max_attempts = 1000
                 attempts = 0
                 while attempts <= max_attempts:
-                    x = randint(0, settings.WIDTH-1)
-                    y = randint(0, settings.HEIGHT-1)
+                    x = randint(0, settings.WIDTH/settings.ZOOM-1)
+                    y = randint(0, settings.HEIGHT/settings.ZOOM-1)
+                    print(x,y)
+
                     test_rect = pygame.Rect(x - settings.POWERUP_SIZE//2, y - settings.POWERUP_SIZE//2, settings.POWERUP_SIZE, settings.POWERUP_SIZE)
 
                     distance = math.hypot(x - player.pos[0], y - player.pos[1])

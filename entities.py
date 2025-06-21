@@ -51,10 +51,12 @@ class Player(pygame.sprite.Sprite) :
         self.took_damage = False
         self.angle = 0
 
+        #invincible on spawn
         self.invincible = False
         self.invincible_time = 0
-        self.is_transparent = False
 
+
+        #powerup
         self.powerup_time = 0
         self.taken_power = False
         self.power_expired = False
@@ -246,10 +248,8 @@ class Player(pygame.sprite.Sprite) :
         #Respawn invinciblity
         
         if pygame.time.get_ticks() >= self.invincible_time :
-            print("Finish")
             self.invincible = False
             self.base_sprite.set_alpha(255) 
-            self.is_transparent = False
             
         self.check_bullet_collision(bullet_group=bullet_group)
         
@@ -271,7 +271,9 @@ class Player(pygame.sprite.Sprite) :
             self.speed = settings.BOOSTED_PLAYER_SPEED
             self.damage = settings.BOOSTED_BULLET_DAMAGE
         
+
         if not self.invincible :
+
             self.base_sprite = self.idle_frames[0]
         self.player_turning()
 
