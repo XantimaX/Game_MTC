@@ -16,12 +16,16 @@ Normal Enemies (Blue) : Health : 5HP, Damage : 1
 Brute Enemies (Red) : Health : 10HP, Damage : 2, throws grenade every 3 seconds. Grenade Damage : 3
 Boss (Surprise) : Health : 20HP, Damage: 3, throws grenade every second. Grenade Damage : 3
 
+## Powerup
+One powersup spawns in the map. Once you take it, you get speed boost and damage boost for 5 seconds.
+
 ## Score 
 You have 3 lives. Each life has 1000 points.
 What time you finish determines score.
-< 4:00 -> 3000 points
-< 5:00 -> 2000 points
-< 6:00 -> 1000 points
+< 3:00 -> 3000 points
+< 4:00 -> 2000 points
+< 5:00 -> 1000 points
+> 5:00 -> 0
 
 So the highest score you can get is 6000.
 
