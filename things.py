@@ -138,7 +138,7 @@ class PowerUp(pygame.sprite.Sprite):
 
                     distance = math.hypot(x - player.pos[0], y - player.pos[1])
                     if (distance <= settings.POWERUP_SAFE_DISTANCE) :
-                        attempt += 1
+                        attempts += 1
                         continue
                     
                     no_collision = True
