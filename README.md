@@ -1,5 +1,5 @@
 # How to run the game ?
-1) Clone this repo by `git clone https://github.com/XantimaX/Game_MTC.git` 
+1) Clone this repo
 2) Download Python (Python 3.13 may not work, if so try older versions)
 3) Open the Command Line Prompt
 4) Make sure your current directory is in the Game_MTC folder.
