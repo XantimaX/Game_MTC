@@ -1,6 +1,6 @@
 # How to run the game ?
 1) Clone this repo.
-2) Download Python 3.6 or above
+2) Download Python (Python 3.13 may not work, if so try older versions)
 3) Open the Command Line Prompt
 4) Make sure your current directory is in the Game_MTC folder.
 5) then pip install the following libraries :
