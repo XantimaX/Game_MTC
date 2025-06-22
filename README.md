@@ -29,7 +29,7 @@ What time you finish determines score.
 
 < 5:00 -> 1000 points
 
-\> 5:00 -> 0
+\>= 5:00 -> 0
 
 So the highest score you can get is 6000.
 
