@@ -132,8 +132,8 @@ class PowerUp(pygame.sprite.Sprite):
                 max_attempts = 1000
                 attempts = 0
                 while attempts <= max_attempts:
-                    x = randint(0, settings.WIDTH//settings.ZOOM-1)
-                    y = randint(0, settings.HEIGHT//settings.ZOOM-1)
+                    x = randint(0, int(settings.WIDTH/settings.ZOOM-1))
+                    y = randint(0, int(settings.HEIGHT/settings.ZOOM-1))
                     test_rect = pygame.Rect(x - settings.POWERUP_SIZE//2, y - settings.POWERUP_SIZE//2, settings.POWERUP_SIZE, settings.POWERUP_SIZE)
 
                     distance = math.hypot(x - player.pos[0], y - player.pos[1])
